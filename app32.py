@@ -164,10 +164,15 @@ if uploaded is not None:
             sr_tensor.squeeze(0).clamp(0, 1)
         )
 
-        hr_np = np.array(hr_img)
+        hr_np = np.array(
+            hr_img.resize(
+                edsr_img.size,
+                Image.BICUBIC
+            )
+        )
 
         sr_np = np.array(edsr_img)
-
+        
         psnr = peak_signal_noise_ratio(
             hr_np,
             sr_np,
@@ -223,9 +228,7 @@ if uploaded is not None:
         Image.NEAREST
     )
 
-    st.subheader("Comparison")
-
-    col1, col2 = st.columns(2)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
 
@@ -260,25 +263,44 @@ if uploaded is not None:
             edsr_img,
             use_container_width=True
         )
-        
-    st.markdown("---")
+    with col3:
 
-    st.subheader("Zoom Comparison")
+        st.markdown(
+            "<h3 style='text-align:center;'>Input Zoom</h3>",
+            unsafe_allow_html=True
+        )
+
+        st.image(
+            crop_lr,
+            use_container_width=True
+        )
+
+    with col4:
+
+        st.markdown(
+            "<h3 style='text-align:center;'>EDSR Zoom</h3>",
+            unsafe_allow_html=True
+        )
+
+        st.image(
+            crop_edsr,
+            use_container_width=True
+        )
 
     img_np = np.array(edsr_img)
 
     H, W = img_np.shape[:2]
 
-    crop_size = min(H, W) // 3
+    crop_size = min(H, W) // 4
 
-    x = st.slider(
+    x = st.sidebar.slider(
         "Zoom X",
         0,
         max(0, W - crop_size),
         W // 3
     )
 
-    y = st.slider(
+    y = st.sidebar.slider(
         "Zoom Y",
         0,
         max(0, H - crop_size),
@@ -298,7 +320,7 @@ if uploaded is not None:
         x:x + crop_size
     ]
 
-    zoom_size = 600
+    zoom_size = 250
 
     crop_lr = Image.fromarray(crop_lr).resize(
         (zoom_size, zoom_size)
@@ -308,17 +330,4 @@ if uploaded is not None:
         (zoom_size, zoom_size)
     )
 
-    col1, col2, col3 = st.columns(3)
-
-    col1.image(
-        crop_lr,
-        caption="Input LR Zoom",
-        use_container_width=True
-    )
-
-    col2.image(
-        crop_edsr,
-        caption="EDSR Zoom",
-        use_container_width=True
-    )
 
