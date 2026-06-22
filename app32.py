@@ -284,7 +284,15 @@ if uploaded is not None:
 
     H, W = img_np.shape[:2]
 
-    crop_size = min(H, W) // 4
+    zoom_level = st.slider(
+        "Magnification",
+        min_value=2,
+        max_value=12,
+        value=4,
+        help="Higher value = stronger zoom"
+    )
+
+    crop_size = min(H, W) // zoom_level
 
     x = st.slider(
         "Zoom X Position",
