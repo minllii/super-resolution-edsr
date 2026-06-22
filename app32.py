@@ -121,7 +121,8 @@ mode = st.sidebar.radio(
     [
         "Upload LR Image",
         "Upload HR Image (Evaluate)"
-    ]
+    ],
+    index=1
 )
 
 # =====================================================
@@ -144,6 +145,14 @@ if uploaded is not None:
         hr_img = img
 
         w, h = hr_img.size
+
+        w = (w // 4) * 4
+        h = (h // 4) * 4
+
+        hr_img = hr_img.resize(
+            (w, h),
+            Image.BICUBIC
+        )
 
         lr_img = hr_img.resize(
             (w // 4, h // 4),
@@ -172,7 +181,7 @@ if uploaded is not None:
         )
 
         sr_np = np.array(edsr_img)
-        
+
         psnr = peak_signal_noise_ratio(
             hr_np,
             sr_np,
@@ -205,30 +214,17 @@ if uploaded is not None:
             sr_tensor.squeeze(0).clamp(0, 1)
         )
 
-    st.markdown("---")
+    m1, m2 = st.columns(2)
 
-    if mode == "Upload HR Image (Evaluate)":
-
-        m1, m2 = st.columns(2)
-
-        m1.metric(
-            "PSNR (dB)",
-            f"{psnr:.2f}"
-        )
-
-        m2.metric(
-            "SSIM",
-            f"{ssim:.4f}"
-        )
-
-        st.markdown("---")
+    m1.metric("PSNR", f"{psnr:.2f} dB")
+    m2.metric("SSIM", f"{ssim:.4f}")
 
     lr_display = lr_img.resize(
         edsr_img.size,
         Image.NEAREST
     )
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2 = st.columns(2)
 
     with col1:
 
@@ -237,15 +233,13 @@ if uploaded is not None:
             unsafe_allow_html=True
         )
 
-        st.markdown(
-            f"<p style='text-align:center;'>Size: {lr_img.size[0]} × {lr_img.size[1]}</p>",
-            unsafe_allow_html=True
-        )
+        c1a, c1b, c1c = st.columns([1,3,1])
 
-        st.image(
-            lr_display,
-            use_container_width=True
-        )
+        with c1b:
+            st.image(
+                lr_display,
+                width=550
+            )
 
     with col2:
 
@@ -254,38 +248,37 @@ if uploaded is not None:
             unsafe_allow_html=True
         )
 
-        st.markdown(
-            f"<p style='text-align:center;'>Size: {edsr_img.size[0]} × {edsr_img.size[1]}</p>",
-            unsafe_allow_html=True
-        )
+        c2a, c2b, c2c = st.columns([1,3,1])
 
-        st.image(
-            edsr_img,
-            use_container_width=True
-        )
-    with col3:
+        with c2b:
+            st.image(
+                edsr_img,
+                width=550
+            )
 
-        st.markdown(
-            "<h3 style='text-align:center;'>Input Zoom</h3>",
-            unsafe_allow_html=True
-        )
+    st.markdown("<br>", unsafe_allow_html=True)
 
-        st.image(
-            crop_lr,
-            use_container_width=True
-        )
+    st.markdown(
+        """
+        <div style="text-align:center;">
+            <a href="#zoom-section" style="font-size:22px;text-decoration:none;">
+                ↓ View Zoom Comparison
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-    with col4:
+    st.markdown("<br><br>", unsafe_allow_html=True)
 
-        st.markdown(
-            "<h3 style='text-align:center;'>EDSR Zoom</h3>",
-            unsafe_allow_html=True
-        )
+    # =====================================================
+    # ZOOM SECTION
+    # =====================================================
 
-        st.image(
-            crop_edsr,
-            use_container_width=True
-        )
+    st.markdown(
+        "<h2 id='zoom-section'>Zoom Comparison</h2>",
+        unsafe_allow_html=True
+    )
 
     img_np = np.array(edsr_img)
 
@@ -293,15 +286,15 @@ if uploaded is not None:
 
     crop_size = min(H, W) // 4
 
-    x = st.sidebar.slider(
-        "Zoom X",
+    x = st.slider(
+        "Zoom X Position",
         0,
         max(0, W - crop_size),
         W // 3
     )
 
-    y = st.sidebar.slider(
-        "Zoom Y",
+    y = st.slider(
+        "Zoom Y Position",
         0,
         max(0, H - crop_size),
         H // 3
@@ -320,7 +313,7 @@ if uploaded is not None:
         x:x + crop_size
     ]
 
-    zoom_size = 250
+    zoom_size = 200
 
     crop_lr = Image.fromarray(crop_lr).resize(
         (zoom_size, zoom_size)
@@ -330,4 +323,34 @@ if uploaded is not None:
         (zoom_size, zoom_size)
     )
 
+    z1, z2 = st.columns(2)
 
+    with z1:
+
+        st.markdown(
+            "<h4 style='text-align:center;'>Input Zoom</h4>",
+            unsafe_allow_html=True
+        )
+
+        za, zb, zc = st.columns([1,3,1])
+
+        with zb:
+            st.image(
+                crop_lr,
+                width=400
+            )
+
+    with z2:
+
+        st.markdown(
+            "<h4 style='text-align:center;'>EDSR Zoom</h4>",
+            unsafe_allow_html=True
+        )
+
+        za, zb, zc = st.columns([1,3,1])
+
+        with zb:
+            st.image(
+                crop_edsr,
+                width=400
+            )
