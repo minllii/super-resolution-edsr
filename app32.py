@@ -238,7 +238,7 @@ if uploaded is not None:
         with c1b:
             st.image(
                 lr_display,
-                width=550
+                width=1000
             )
 
     with col2:
@@ -253,112 +253,105 @@ if uploaded is not None:
         with c2b:
             st.image(
                 edsr_img,
-                width=550
+                width=1000
             )
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown(
-        """
-        <div style="text-align:center;">
-            <a href="#zoom-section" style="font-size:22px;text-decoration:none;">
-                ↓ View Zoom Comparison
-            </a>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    with st.expander("🔍 View Zoom Comparison"):
+
+        # =====================================================
+        # ZOOM SECTION
+        # =====================================================
+
+        st.markdown(
+            "<h2 id='zoom-section'>Zoom Comparison</h2>",
+            unsafe_allow_html=True
+        )
+
+        img_np = np.array(edsr_img)
+
+        H, W = img_np.shape[:2]
+
+        zoom_level = st.slider(
+            "Magnification",
+            min_value=2,
+            max_value=12,
+            value=4,
+            help="Higher value = stronger zoom"
+        )
+
+        crop_size = min(H, W) // zoom_level
+
+        x = st.slider(
+            "Zoom X Position",
+            0,
+            max(0, W - crop_size),
+            W // 3
+        )
+
+        y = st.slider(
+            "Zoom Y Position",
+            0,
+            max(0, H - crop_size),
+            H // 3
+        )
+
+        lr_np = np.array(lr_display)
+        edsr_np = np.array(edsr_img)
+
+        crop_lr = lr_np[
+            y:y + crop_size,
+            x:x + crop_size
+        ]
+
+        crop_edsr = edsr_np[
+            y:y + crop_size,
+            x:x + crop_size
+        ]
+
+        zoom_size = 200
+
+        crop_lr = Image.fromarray(crop_lr).resize(
+            (zoom_size, zoom_size)
+        )
+
+        crop_edsr = Image.fromarray(crop_edsr).resize(
+            (zoom_size, zoom_size)
+        )
+
+        z1, z2 = st.columns(2)
+
+        with z1:
+
+            st.markdown(
+                "<h4 style='text-align:center;'>Input Zoom</h4>",
+                unsafe_allow_html=True
+            )
+
+            za, zb, zc = st.columns([1,3,1])
+
+            with zb:
+                st.image(
+                    crop_lr,
+                    width=400
+                )
+
+        with z2:
+
+            st.markdown(
+                "<h4 style='text-align:center;'>EDSR Zoom</h4>",
+                unsafe_allow_html=True
+            )
+
+            za, zb, zc = st.columns([1,3,1])
+
+            with zb:
+                st.image(
+                    crop_edsr,
+                    width=400
+                )
 
     st.markdown("<br><br>", unsafe_allow_html=True)
 
-    # =====================================================
-    # ZOOM SECTION
-    # =====================================================
-
-    st.markdown(
-        "<h2 id='zoom-section'>Zoom Comparison</h2>",
-        unsafe_allow_html=True
-    )
-
-    img_np = np.array(edsr_img)
-
-    H, W = img_np.shape[:2]
-
-    zoom_level = st.slider(
-        "Magnification",
-        min_value=2,
-        max_value=12,
-        value=4,
-        help="Higher value = stronger zoom"
-    )
-
-    crop_size = min(H, W) // zoom_level
-
-    x = st.slider(
-        "Zoom X Position",
-        0,
-        max(0, W - crop_size),
-        W // 3
-    )
-
-    y = st.slider(
-        "Zoom Y Position",
-        0,
-        max(0, H - crop_size),
-        H // 3
-    )
-
-    lr_np = np.array(lr_display)
-    edsr_np = np.array(edsr_img)
-
-    crop_lr = lr_np[
-        y:y + crop_size,
-        x:x + crop_size
-    ]
-
-    crop_edsr = edsr_np[
-        y:y + crop_size,
-        x:x + crop_size
-    ]
-
-    zoom_size = 200
-
-    crop_lr = Image.fromarray(crop_lr).resize(
-        (zoom_size, zoom_size)
-    )
-
-    crop_edsr = Image.fromarray(crop_edsr).resize(
-        (zoom_size, zoom_size)
-    )
-
-    z1, z2 = st.columns(2)
-
-    with z1:
-
-        st.markdown(
-            "<h4 style='text-align:center;'>Input Zoom</h4>",
-            unsafe_allow_html=True
-        )
-
-        za, zb, zc = st.columns([1,3,1])
-
-        with zb:
-            st.image(
-                crop_lr,
-                width=400
-            )
-
-    with z2:
-
-        st.markdown(
-            "<h4 style='text-align:center;'>EDSR Zoom</h4>",
-            unsafe_allow_html=True
-        )
-
-        za, zb, zc = st.columns([1,3,1])
-
-        with zb:
-            st.image(
-                crop_edsr,
-                width=400
-            )
+    
