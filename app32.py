@@ -164,7 +164,12 @@ if uploaded is not None:
             sr_tensor.squeeze(0).clamp(0, 1)
         )
 
-        hr_np = np.array(hr_img)
+        hr_np = np.array(
+            hr_img.resize(
+                edsr_img.size,
+                Image.BICUBIC
+            )
+        )
 
         sr_np = np.array(edsr_img)
 
