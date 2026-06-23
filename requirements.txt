@@ -4,3 +4,4 @@ torchvision
 pillow
 numpy
 scikit-image
+streamlit-image-comparison

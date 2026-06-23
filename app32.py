@@ -5,6 +5,7 @@ import numpy as np
 import os
 os.environ["PYTORCH_NO_CUDA_MEMORY_CACHING"] = "1"
 
+from streamlit_image_comparison import image_comparison
 from skimage.metrics import peak_signal_noise_ratio
 from skimage.metrics import structural_similarity
 from PIL import Image
@@ -124,7 +125,7 @@ mode = st.sidebar.radio(
         "Upload LR Image",
         "Upload HR Image (Evaluate)"
     ],
-    index=1
+    index=0
 )
 
 # =====================================================
@@ -230,40 +231,53 @@ if uploaded is not None:
         Image.NEAREST
     )
 
-    col1, col2 = st.columns(2)
+    st.markdown(
+        "<h3 style='text-align:center;'>Before vs After Comparison</h3>",
+        unsafe_allow_html=True
+    )
 
-    with col1:
+    # Resize while preserving aspect ratio
 
-        st.markdown(
-            "<h3 style='text-align:center;'>Input Image</h3>",
-            unsafe_allow_html=True
+    w, h = lr_display.size
+
+    max_width = 650
+    max_height = 400
+
+    scale = min(
+        max_width / w,
+        max_height / h
+    )
+
+    target_width = int(w * scale)
+    target_height = int(h * scale)
+
+    lr_compare = lr_display.resize(
+        (target_width, target_height),
+        Image.BICUBIC
+    )
+
+    sr_compare = edsr_img.resize(
+        (target_width, target_height),
+        Image.BICUBIC
+    )
+
+    c1, c2, c3 = st.columns([2.8, 5, 2])
+
+    with c2:
+
+        image_comparison(
+            img1=lr_compare,
+            img2=sr_compare,
+            label1="Input",
+            label2="EDSR Enhanced"
         )
-
-        c1a, c1b, c1c = st.columns([1,3,1])
-
-        with c1b:
-            st.image(
-                lr_display,
-                width=650
-            )
-
-    with col2:
-
-        st.markdown(
-            "<h3 style='t" \
-            "ext-align:center;'>EDSR Enhanced Image</h3>",
-            unsafe_allow_html=True
-        )
-
-        c2a, c2b, c2c = st.columns([1,3,1])
-
-        with c2b:
-            st.image(
-                edsr_img,
-                width=650
-            )
 
     st.markdown("<br>", unsafe_allow_html=True)
+
+    st.markdown(
+        "<h3 style='text-align:center;'>Zoom Analysis</h3>",
+        unsafe_allow_html=True
+    )
 
     with st.expander("🔍 View Zoom Comparison"):
 
