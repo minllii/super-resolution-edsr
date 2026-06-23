@@ -2,6 +2,8 @@ import streamlit as st
 import torch
 import torch.nn as nn
 import numpy as np
+import os
+os.environ["PYTORCH_NO_CUDA_MEMORY_CACHING"] = "1"
 
 from skimage.metrics import peak_signal_noise_ratio
 from skimage.metrics import structural_similarity
@@ -99,7 +101,7 @@ def load_model():
     model.load_state_dict(
         torch.load(
             "edsr32_epoch100.pth",
-            map_location="cpu"
+            map_location=torch.device("cpu")
         )
     )
 
@@ -144,15 +146,15 @@ if uploaded is not None:
 
         hr_img = img
 
+        # Cap max size to prevent memory crash
+        MAX_SIZE = 256  # safe for free tier
         w, h = hr_img.size
-
-        w = (w // 4) * 4
-        h = (h // 4) * 4
-
-        hr_img = hr_img.resize(
-            (w, h),
-            Image.BICUBIC
-        )
+        
+        if max(w, h) > MAX_SIZE:
+            scale = MAX_SIZE / max(w, h)
+            w = int(w * scale)
+            h = int(h * scale)
+            hr_img = hr_img.resize((w, h), Image.BICUBIC)
 
         lr_img = hr_img.resize(
             (w // 4, h // 4),
