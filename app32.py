@@ -200,12 +200,15 @@ if uploaded is not None:
 
         lr_img = img
 
+        MAX_LR_SIZE = 256
+
         w, h = lr_img.size
 
-        bicubic = lr_img.resize(
-            (w * 4, h * 4),
-            Image.BICUBIC
-        )
+        if max(w, h) > MAX_LR_SIZE:
+            scale = MAX_LR_SIZE / max(w, h)
+            w = int(w * scale)
+            h = int(h * scale)
+            lr_img = lr_img.resize((w, h), Image.BICUBIC)
 
         lr_tensor = transforms.ToTensor()(lr_img).unsqueeze(0)
 
