@@ -214,10 +214,11 @@ if uploaded is not None:
             sr_tensor.squeeze(0).clamp(0, 1)
         )
 
-    m1, m2 = st.columns(2)
-
-    m1.metric("PSNR", f"{psnr:.2f} dB")
-    m2.metric("SSIM", f"{ssim:.4f}")
+    # Metrics (only in HR mode)
+    if mode == "Upload HR Image (Evaluate)":
+        m1, m2 = st.columns(2)
+        m1.metric("PSNR", f"{psnr:.2f} dB")
+        m2.metric("SSIM", f"{ssim:.4f}")
 
     lr_display = lr_img.resize(
         edsr_img.size,
@@ -238,13 +239,14 @@ if uploaded is not None:
         with c1b:
             st.image(
                 lr_display,
-                width=1000
+                width=650
             )
 
     with col2:
 
         st.markdown(
-            "<h3 style='text-align:center;'>EDSR Enhanced Image</h3>",
+            "<h3 style='t" \
+            "ext-align:center;'>EDSR Enhanced Image</h3>",
             unsafe_allow_html=True
         )
 
@@ -253,7 +255,7 @@ if uploaded is not None:
         with c2b:
             st.image(
                 edsr_img,
-                width=1000
+                width=650
             )
 
     st.markdown("<br>", unsafe_allow_html=True)
